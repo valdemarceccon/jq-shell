@@ -1,5 +1,6 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+use std::process::{Command, Stdio};
 
 fn main() {
     let mut rl = Editor::<()>::new();
@@ -45,8 +46,19 @@ fn get_cmd(a: &str) -> Option<fn() -> ()> {
     let a = a.trim();
     match a {
         "help" => Some(print_usage),
-        _ => None,
+        jq_input => exec_jq(jq_input),
     }
+}
+
+fn exec_jq(jq_input: &str) -> Option<fn() -> ()> {
+    let a = Command::new("jq")
+        // .stdin(Stdio::inherit())
+        .stdout(Stdio::piped())
+        .args(&[jq_input])
+        .output()
+        .expect("something wrong");
+    println!("{:?}", a);
+    None
 }
 
 fn print_usage() {
